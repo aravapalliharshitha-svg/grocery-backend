@@ -5,7 +5,11 @@ const ItemSchema = new mongoose.Schema({
     quantity: { type: String, default: "1" }, 
     category: { type: String, default: 'General' },
     isCompleted: { type: Boolean, default: false },
-    user: { type: String, required: true },
+   user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
+},
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -1,26 +1,28 @@
+const auth = require('../middleware/auth');
 const express = require('express');
 const router = express.Router();
 const Item = require('../models/Item');
-// 1. GET items for a specific user
-router.get('/:username', async (req, res) => {
+// 1. GET items for the logged-in user (Secure)
+router.get('/', auth, async (req, res) => {
   try {
-    // This finds ONLY items where the user field matches the name in the URL
-    const items = await Item.find({ user: req.params.username });
+    // This looks for items belonging to the ID stored in the token!
+    const items = await Item.find({ user: req.user }); 
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 // 2. POST a new item with a user label
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
+  console.log("User ID from token:", req.user);
   const newItem = new Item({
     name: req.body.name,
     category: req.body.category,
     quantity: req.body.quantity,
-    user: req.body.user, 
+    user: req.user, // <--- CHANGE 'req.body.user' TO 'req.user'
     isCompleted: false
   });
+  
   try {
     const savedItem = await newItem.save();
     res.status(201).json(savedItem);
