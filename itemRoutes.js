@@ -1,7 +1,7 @@
-const auth = require('../middleware/auth');
+const auth = require('./middleware/auth');
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Item');
+const Item = require('./models/Item');
 // 1. GET items for the logged-in user (Secure)
 router.get('/:groupCode', auth, async (req, res) => {
   try {
