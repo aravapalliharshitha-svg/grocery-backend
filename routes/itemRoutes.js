@@ -3,10 +3,10 @@ const express = require('express');
 const router = express.Router();
 const Item = require('../models/Item');
 // 1. GET items for the logged-in user (Secure)
-router.get('/', auth, async (req, res) => {
+router.get('/:groupCode', auth, async (req, res) => {
   try {
-    // This looks for items belonging to the ID stored in the token!
-    const items = await Item.find({ user: req.user }); 
+    // Finds items that match the group code
+    const items = await Item.find({ groupCode: req.params.groupCode });
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -14,22 +14,20 @@ router.get('/', auth, async (req, res) => {
 });
 // 2. POST a new item with a user label
 router.post('/', auth, async (req, res) => {
-  console.log("User ID from token:", req.user);
-  const newItem = new Item({
-    name: req.body.name,
-    category: req.body.category,
-    quantity: req.body.quantity,
-    user: req.user, // <--- CHANGE 'req.body.user' TO 'req.user'
-    isCompleted: false
-  });
-  
   try {
+    const newItem = new Item({
+      ...req.body,
+      user: req.user.id, // Make sure this matches your middleware (req.user.id)
+      groupCode: req.body.groupCode 
+    });
+
     const savedItem = await newItem.save();
     res.status(201).json(savedItem);
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
-});
+}); // This should be the ONLY closing bracket for the route
 
 // 3. DELETE ITEM 
 router.delete('/:id', async (req, res) => {
@@ -42,7 +40,8 @@ router.delete('/:id', async (req, res) => {
 });
 
 // 4. UPDATE/PATCH ITEM 
-router.patch('/:id', async (req, res) => {
+// UPDATE/PATCH ITEM (Checklist toggle)
+router.patch('/:id', auth, async (req, res) => {
   try {
     const updated = await Item.findByIdAndUpdate(
       req.params.id, 

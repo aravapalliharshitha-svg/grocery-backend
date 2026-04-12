@@ -14,7 +14,7 @@ module.exports = function (req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Add the user ID from the token to the request object
-    req.user = decoded.userId;
+    req.user = { id: decoded.userId };
     
     // Move on to the actual route (add/delete grocery)
     next();
